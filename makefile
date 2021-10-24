@@ -9,7 +9,7 @@ CRFLAGS= \
 				--target x86_64-unknown-linux-elf \
 				--prelude ./prelude.cr \
 				--error-trace \
-				--mcmodel kernel \
+				--mcmodel large \
 				-Ddisable_overflow
 
 # we want to use clang and output a PE/COFF formatted file
