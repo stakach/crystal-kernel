@@ -20,6 +20,10 @@ struct Pointer(T)
     new 0_u64
   end
 
+  def self.new(address : Int)
+    new address.to_u64!
+  end
+
   def [](offset : Int)
     (self + offset.to_i64).value
   end

@@ -25,13 +25,13 @@ struct Slice(T)
   end
 
   def [](idx : Int)
-    raise "Slice: out of range" if idx >= @size || idx < 0
+    return nil if idx >= @size || idx < 0
     @buffer[idx]
   end
 
   @[AlwaysInline]
   def []=(idx : Int, value : T)
-    raise "Slice: out of range" if idx >= @size || idx < 0
+    return value if idx >= @size || idx < 0
     @buffer[idx] = value
   end
 

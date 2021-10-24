@@ -45,4 +45,4 @@ bin/kernel.elf : bin/kernel.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 bin/kernel.o : $(KERNEL_SRC)
-	crystal build $(CRFLAGS) src/main.cr -o bin/kernel
+	crystal build $(CRFLAGS) src/kernel.cr -o bin/kernel
