@@ -2,14 +2,14 @@
 uefi_kernel : bin/kernel.elf
 
 CRFLAGS= \
-				--release								\
-				--no-debug							\
-				-Dkernel								\
-				--cross-compile					\
+				--release               \
+				--no-debug              \
+				-Dkernel                \
+				--cross-compile         \
 				--target x86_64-unknown-linux-elf \
-				--prelude ./prelude.cr	\
-				--error-trace						\
-				--mcmodel large					\
+				--prelude ./prelude.cr  \
+				--error-trace           \
+				--mcmodel large         \
 				-Ddisable_overflow
 
 # we want to use clang and output a PE/COFF formatted file
@@ -20,23 +20,23 @@ CC = clang
 # https://eli.thegreenplace.net/2012/01/03/understanding-the-x64-code-models
 CFLAGS+= \
 				-target x86_64-unknown-linux-elf \
-				-ffreestanding	\
-				-mcmodel=large	\
-				-fno-pic				\
-				-O2							\
-				-Wall						\
+				-ffreestanding  \
+				-mcmodel=large  \
+				-fno-pic        \
+				-O2             \
+				-Wall           \
 				-Wextra
 
 # force use of LLVM Linker and output a PE/COFF formatted file
 LDFLAGS+= \
 				-target x86_64-unknown-linux-elf \
-				-nostdlib								\
-				-static									\
-				-ffreestanding					\
-				-O2											\
-				-T kernel.ld						\
-				-z max-page-size=0x1000	\
-				-Wl,-ekernel_main				\
+				-nostdlib               \
+				-static                 \
+				-ffreestanding          \
+				-O2                     \
+				-T kernel.ld            \
+				-z max-page-size=0x1000 \
+				-Wl,-ekernel_main       \
 				-fuse-ld=lld
 
 KERNEL_SRC=$(wildcard src/*.cr src/*/*.cr)
