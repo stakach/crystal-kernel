@@ -12,8 +12,7 @@ CRFLAGS= \
         --mcmodel large         \
         -Ddisable_overflow
 
-# we want to use clang and output a PE/COFF formatted file
-# these are the zig flags
+# We use clang to handle linking via LLD
 CC = clang
 
 # we want a freestanding executable with access to the full x64 address space
@@ -27,7 +26,7 @@ CFLAGS+= \
         -Wall           \
         -Wextra
 
-# force use of LLVM Linker and output a PE/COFF formatted file
+# force use of LLVM Linker and output an ElF formatted file
 LDFLAGS+= \
         -target x86_64-unknown-linux-elf \
         -nostdlib               \
