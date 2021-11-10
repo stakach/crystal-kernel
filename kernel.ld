@@ -23,13 +23,14 @@ SECTIONS
   .rodata : ALIGN (4K)
   {
     *(.rodata*)
+    *(.gcc_except_table)
+    *(.eh_frame*)
+    *(.got*)
   }
 
   .data : ALIGN (4K)
   {
-    *(.eh_frame*)
     *(.data*)
-    *(.got)
   }
 
   .bss : ALIGN (4K)

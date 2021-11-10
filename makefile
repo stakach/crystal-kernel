@@ -1,5 +1,5 @@
 .PHONY : uefi_kernel
-uefi_kernel : bin/kernel.elf
+uefi_kernel : bin/kernelx64.elf
 
 CRFLAGS= \
         --release               \
@@ -40,8 +40,8 @@ LDFLAGS+= \
 
 KERNEL_SRC=$(wildcard src/*.cr src/*/*.cr)
 
-bin/kernel.elf : bin/kernel.o
+bin/kernelx64.elf : bin/kernelx64.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-bin/kernel.o : $(KERNEL_SRC)
-	crystal build $(CRFLAGS) src/kernel.cr -o bin/kernel
+bin/kernelx64.o : $(KERNEL_SRC)
+	crystal build $(CRFLAGS) src/kernel.cr -o bin/kernelx64
