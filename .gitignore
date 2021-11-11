@@ -4,3 +4,4 @@
 *.elf
 *.DS_Store
 zig-cache
+disk.cdr
