@@ -33,6 +33,11 @@ SECTIONS
     *(.data*)
   }
 
+  .debug : ALIGN (4K)
+  {
+    *(.debug*)
+  }
+
   .bss : ALIGN (4K)
   {
     *(COMMON)

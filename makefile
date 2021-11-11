@@ -1,9 +1,11 @@
 .PHONY : uefi_kernel
 uefi_kernel : bin/kernelx64.elf
 
+# Add these back for release builds
+# --release
+# --no-debug
+
 CRFLAGS= \
-        --release               \
-        --no-debug              \
         -Dkernel                \
         --cross-compile         \
         --target x86_64-unknown-linux-elf \
