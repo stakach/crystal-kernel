@@ -29,7 +29,11 @@ brew install zig
 brew install gdb
 ```
 
-Download the [UEFI BIOS](https://www.kraxel.org/repos/jenkins/edk2/), extract using something like 7zip to get the OVMF-pure-efi.fd
+Download the [UEFI BIOS](https://www.kraxel.org/repos/jenkins/edk2/), extract using something like 7zip to get
+
+* OVMF-pure-efi.fd for x64
+* QEMU_EFI-pflash.raw for aarch64
+
 
 ### Running the kernel using QEMU
 

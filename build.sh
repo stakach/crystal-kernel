@@ -40,7 +40,7 @@ rm bin/kernelx64.o
 echo "----------------------"
 echo "-> creating disk image"
 echo "----------------------"
-hdiutil create -fs fat32 -ov -size 48m -volname CRYOS -format UDTO -srcfolder bin disk.cdr || exit_code="$?"
+hdiutil create -fs fat32 -ov -size 64m -volname CRYOS -format UDTO -srcfolder bin disk.cdr || exit_code="$?"
 
 # TODO:: Linux
 # create disk image (64MB)
