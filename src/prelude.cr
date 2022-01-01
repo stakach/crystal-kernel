@@ -1,5 +1,5 @@
-require "./prelude/atomic.cr"
-require "./prelude/primitives.cr"
+require "./prelude/atomic"
+require "./prelude/primitives"
 
 # order matters
 require "./crystal_core/object"

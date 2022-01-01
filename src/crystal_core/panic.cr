@@ -1,6 +1,6 @@
 def abort(*args) : NoReturn
   # TODO: print call stack
-  # Serial.print *args
+  # Console.print *args
   while true
     Pointer(Int32).null.value = 0
   end

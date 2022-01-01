@@ -43,7 +43,7 @@ class Hash(K, V) < Markable
   def get_key_with_hasher(key, hasher)
     return if @size == 0
     idx = key.hash(hasher).result & (@size - 1)
-    # Serial.print idx, ' ', @entries.as(Void*), '\n'
+    # Console.print idx, ' ', @entries.as(Void*), '\n'
     while idx < @size
       entry = @entries[idx]
       unless entry.empty?

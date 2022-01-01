@@ -1,7 +1,9 @@
 struct Slice(T)
   getter size : UInt64
+  @size : UInt64
 
-  def initialize(@buffer : Pointer(T), @size : UInt64)
+  def initialize(@buffer : Pointer(T), size : Int)
+    @size = size.to_u64
   end
 
   def self.null

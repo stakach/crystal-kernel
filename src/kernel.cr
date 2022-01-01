@@ -1,21 +1,35 @@
-require "./entry_point.cr"
-require "./kernel/arch/mem.cr"
-require "./kernel/console.cr"
+lib Kernel
+  # These are the pointers configured in `kernel.ld`
+  $kernel_start : Void*
+  $kernel_end : Void*
 
-boot_info = UEFI.boot_info.value
-memory_map = Slice.new(Pointer(UEFI::MemoryDescriptor).new(boot_info.memory_map_ptr.address), boot_info.memory_map_size)
+  $text_start : Void*
+  $text_end : Void*
 
-graphics = boot_info.graphics.value
-graphics_mode = graphics.mode_info.value
+  $data_start : Void*
+  $data_end : Void*
 
-frame_buffer = Slice.new(Pointer(UInt32).new(graphics.frame_buffer_base), graphics.frame_buffer_size)
-width = graphics_mode.horizontal_resolution
-height = graphics_mode.vertical_resolution
-
-Console.init(width, height, graphics.frame_buffer_base, graphics.frame_buffer_size)
-Console.print "-- booting crystal kernel --\n"
-Console.print "* init console... [done]"
-
-while true
-  asm("hlt")
+  $bss_start : Void*
+  $bss_end : Void*
 end
+
+require "./entry_point"
+require "./kernel/console"
+require "./kernel/architecture"
+
+boot_info = BootBoot.bootboot.value
+
+Console.init(
+  boot_info.frame_buffer_width,
+  boot_info.frame_buffer_height,
+  boot_info.frame_buffer_ptr,
+  boot_info.frame_buffer_size
+)
+Console.print "-- booting crystal kernel --\n"
+Console.print "* init console... [done]\n"
+
+Console.print "* init architecture...\n"
+Architecture.init
+Console.print "* init architecture... [done]\n"
+
+Architecture.halt_processor
