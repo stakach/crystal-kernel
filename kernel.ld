@@ -1,8 +1,8 @@
 
-mmio        = 0xfffffffff7000000;
-fb          = 0xfffffffffb000000;
+mmio        = 0xfffffffff5000000;
+fb          = 0xfffffffff9000000;
 bootboot    = 0xfffffffffe000000;
-environment = 0xfffffffffe001000;
+environment = 0xfffffffffe002000;
 initstack   = 0x4000;
 
 PHDRS
