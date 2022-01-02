@@ -40,5 +40,5 @@ lib BootBoot
     frame_buffer_scanline : UInt32
   end
 
-  $bootboot : Info*
+  $bootboot : Info
 end

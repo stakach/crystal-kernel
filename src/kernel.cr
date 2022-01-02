@@ -17,7 +17,7 @@ require "./entry_point"
 require "./kernel/console"
 require "./kernel/architecture"
 
-boot_info = BootBoot.bootboot.value
+boot_info = BootBoot.bootboot
 
 Console.init(
   boot_info.frame_buffer_width,
