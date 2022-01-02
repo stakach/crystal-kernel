@@ -11,7 +11,7 @@ CRFLAGS= \
         --target x86_64-unknown-linux-elf \
         --prelude ./prelude.cr  \
         --error-trace           \
-        --mcmodel large         \
+        --mcmodel kernel         \
         -Ddisable_overflow
 
 # We use clang to handle linking via LLD
@@ -22,7 +22,7 @@ CC = clang
 CFLAGS+= \
         -target x86_64-unknown-linux-elf \
         -ffreestanding  \
-        -mcmodel=large  \
+        -mcmodel=kernel  \
         -fno-pic        \
         -O2             \
         -Wall           \

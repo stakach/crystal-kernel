@@ -1,8 +1,9 @@
 
-mmio        = 0xfffffffff8000000;
-fb          = 0xfffffffffc000000; /* address at -1GB */
-bootboot    = 0xffffffffffe00000;
-environment = 0xffffffffffe01000;
+mmio        = 0xfffffffff7000000;
+fb          = 0xfffffffffb000000;
+bootboot    = 0xfffffffffe000000;
+environment = 0xfffffffffe001000;
+initstack   = 0x4000;
 
 PHDRS
 {
@@ -12,7 +13,7 @@ PHDRS
 
 SECTIONS
 {
-  . = 0xffffffffffe02000;
+  . = 0xffffffffff000000;
   _KERNEL_START = .;
 
   .text : ALIGN (4K) {
@@ -38,8 +39,8 @@ SECTIONS
     data_start = .; QUAD(_DATA_START)
     data_end = .;   QUAD(_DATA_END)
 
-    rodata_start = .; QUAD(_DATA_START)
-    rodata_end = .;   QUAD(_DATA_END)
+    rodata_start = .; QUAD(_RODATA_START)
+    rodata_end = .;   QUAD(_RODATA_END)
 
     bss_start = .; QUAD(_BSS_START)
     bss_end = .;   QUAD(_BSS_END)
@@ -59,11 +60,11 @@ SECTIONS
     _BSS_END = .;
   } :boot
 
+  _KERNEL_END = .;
+
   .debug (NOLOAD) : {
     *(.debug*)
-  } :boot
+  }
 
   /DISCARD/ : { *(.eh_frame_hdr) *(.eh_frame) *(.comment) }
-
-  _KERNEL_END = .;
 }
