@@ -118,7 +118,7 @@ module Console
           seq
         elsif ch == 'm'.ord.to_u8
           # SGR
-          # Serial.print "unhandled sgr: ", @arg_n, '\n'
+          # Console.print "unhandled sgr: ", @arg_n, '\n'
           reset
         elsif !@arg_n.nil? && ch == 'K'.ord.to_u8
           seq = CsiSequence.new CsiSequenceType::EraseInLine, @arg_n

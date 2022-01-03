@@ -1,4 +1,5 @@
-require "./entry_point/uefi_boot_info"
+# require "./entry_point/uefi_boot_info"
+require "./entry_point/boot_boot"
 
 lib LibCrystalMain
   fun __crystal_main(argc : Int32, argv : UInt8**)

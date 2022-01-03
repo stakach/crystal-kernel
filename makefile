@@ -1,5 +1,5 @@
 .PHONY : uefi_kernel
-uefi_kernel : bin/kernelx64.elf
+uefi_kernel : bin/bootboot/X86_64
 
 # Add these back for release builds
 # --release
@@ -11,7 +11,7 @@ CRFLAGS= \
         --target x86_64-unknown-linux-elf \
         --prelude ./prelude.cr  \
         --error-trace           \
-        --mcmodel large         \
+        --mcmodel kernel         \
         -Ddisable_overflow
 
 # We use clang to handle linking via LLD
@@ -22,7 +22,7 @@ CC = clang
 CFLAGS+= \
         -target x86_64-unknown-linux-elf \
         -ffreestanding  \
-        -mcmodel=large  \
+        -mcmodel=kernel  \
         -fno-pic        \
         -O2             \
         -Wall           \
@@ -42,7 +42,7 @@ LDFLAGS+= \
 
 KERNEL_SRC=$(wildcard src/*.cr src/*/*.cr)
 
-bin/kernelx64.elf : bin/kernelx64.o
+bin/bootboot/X86_64 : bin/kernelx64.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 bin/kernelx64.o : $(KERNEL_SRC)

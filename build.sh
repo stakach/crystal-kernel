@@ -19,13 +19,21 @@ echo "-> cleaning bin folder"
 rm -rf ./bin
 mkdir bin
 
-echo "---------------------"
-echo "-> building bootstrap"
-echo "---------------------"
-cd bootstrap
-./build.sh || exit_code="$?"
-cd ..
-mv ./bootstrap/bin/efi ./bin/efi
+
+echo "-----------------------"
+echo "-> configuring bootboot"
+echo "-----------------------"
+mkdir -p .tmp
+FILE=./.tmp/bootboot.efi
+if [ -f "$FILE" ]; then
+    echo "* BOOTBOOT found"
+else
+    echo "* downloading BOOTBOOT..."
+    curl "https://gitlab.com/bztsrc/bootboot/raw/master/dist/bootboot.efi" --output "$FILE"
+fi
+mkdir -p bin/efi/boot
+mkdir -p bin/bootboot
+cp ./.tmp/bootboot.efi ./bin/efi/boot/bootx64.efi
 
 echo "-------------------------"
 echo "-> building x86_64 kernel"

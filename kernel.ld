@@ -1,53 +1,70 @@
 
-/** The physical starting address of the kernel. */
-KERNEL_PHYS_START = 1M;
+mmio        = 0xfffffffff5000000;
+fb          = 0xfffffffff9000000;
+bootboot    = 0xfffffffffe000000;
+environment = 0xfffffffffe002000;
+initstack   = 0x4000;
 
-/** The size of the kernel stack. */
-KERNEL_STACK_SIZE = 0x4000;
+PHDRS
+{
+  /* one single loadable segment */
+  boot PT_LOAD;
+}
 
 SECTIONS
 {
-  . = KERNEL_PHYS_START;
-  kernel_start = .;
+  . = 0xffffffffff000000;
+  _KERNEL_START = .;
 
-  .text : ALIGN (4K)
-  {
-    /** pointer to boot information. */
-    boot_info = .;
-    . = . + 8;
-
-    /** start of kernel code. */
+  .text : ALIGN (4K) {
+    _TEXT_START = .;
     *(.text*)
-  }
+    . = ALIGN(4K);
+    _TEXT_END = .;
 
-  .rodata : ALIGN (4K)
-  {
-    *(.rodata*)
+    _DATA_START = .;
+    *(.data .data.*)
+    . = ALIGN(4K);
+    _DATA_END = .;
+
+    _RODATA_START = .;
+    *(.rodata .rodata.*)
     *(.gcc_except_table)
-    *(.eh_frame*)
     *(.got*)
-  }
 
-  .data : ALIGN (4K)
-  {
-    *(.data*)
-  }
+    /** pointers to various sections of this file. */
+    text_start = .; QUAD(_TEXT_START)
+    text_end = .;   QUAD(_TEXT_END)
 
-  .debug : ALIGN (4K)
-  {
+    data_start = .; QUAD(_DATA_START)
+    data_end = .;   QUAD(_DATA_END)
+
+    rodata_start = .; QUAD(_RODATA_START)
+    rodata_end = .;   QUAD(_RODATA_END)
+
+    bss_start = .; QUAD(_BSS_START)
+    bss_end = .;   QUAD(_BSS_END)
+
+    kernel_start = .; QUAD(_KERNEL_START)
+    kernel_end = .; QUAD(_KERNEL_END)
+
+    . = ALIGN(4K);
+    _RODATA_END = .;
+  } :boot
+
+  .bss (NOLOAD) : ALIGN (4K) {
+    _BSS_START = .;
+    *(COMMON)
+    *(.bss*)
+    . = ALIGN(4K);
+    _BSS_END = .;
+  } :boot
+
+  _KERNEL_END = .;
+
+  .debug (NOLOAD) : {
     *(.debug*)
   }
 
-  .bss : ALIGN (4K)
-  {
-    *(COMMON)
-    *(.bss*)
-
-    . = ALIGN (16);
-    stack_bottom = .;
-    . += KERNEL_STACK_SIZE;
-    stack_top = .;
-  }
-
-  kernel_end = .;
+  /DISCARD/ : { *(.eh_frame_hdr) *(.eh_frame) *(.comment) }
 }
