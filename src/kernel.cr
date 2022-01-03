@@ -1,14 +1,21 @@
 lib Kernel
-  # These are the pointers configured in `kernel.ld`
+  # These pointers are configured in `kernel.ld`
   $kernel_start : Void*
   $kernel_end : Void*
 
+  # kernel executable code
   $text_start : Void*
   $text_end : Void*
 
+  # static variables
   $data_start : Void*
   $data_end : Void*
 
+  # read only variables
+  $rodata_start : Void*
+  $rodata_end : Void*
+
+  # uninitialized variables
   $bss_start : Void*
   $bss_end : Void*
 end

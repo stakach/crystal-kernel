@@ -84,7 +84,7 @@ module Architecture::GDT
     init_gdt_entry 8, 0x0, 0xFFFFFFFF, 0xB2, 0xAF # device data (CPL=1)
     init_tss
 
-    # UEFI has us in flat memory already so need to long jump after setting GDT
+    # UEFI has us in flat memory already so no need to long jump after setting GDT
     ptr = pointerof(@@gdtr)
     asm("lgdt (%rdi)" ::"{rdi}"(ptr) : "volatile", "%rdi")
   end
