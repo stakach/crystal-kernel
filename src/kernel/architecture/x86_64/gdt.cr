@@ -86,7 +86,7 @@ module Architecture::GDT
 
     # UEFI has us in flat memory already so no need to long jump after setting GDT
     ptr = pointerof(@@gdtr)
-    asm("lgdt (%rdi)" ::"{rdi}"(ptr) : "volatile", "%rdi")
+    asm("lgdt (%rdi)" :: "{rdi}"(ptr) : "volatile", "%rdi")
   end
 
   private def init_gdt_entry(num : ISize,

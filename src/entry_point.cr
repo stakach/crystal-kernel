@@ -1,5 +1,4 @@
-# require "./entry_point/uefi_boot_info"
-require "./entry_point/boot_boot"
+require "./entry_point/*"
 
 lib LibCrystalMain
   fun __crystal_main(argc : Int32, argv : UInt8**)
@@ -22,21 +21,4 @@ fun __crystal_once(state : Void*, flag : Bool*, initializer : Void*)
 end
 
 fun __crystal_personality
-end
-
-@[Raises]
-fun __crystal_raise(unwind_ex : Void*) : NoReturn
-  while true
-    asm("hlt")
-  end
-end
-
-fun __crystal_raise_overflow : NoReturn
-  while true
-    asm("hlt")
-  end
-end
-
-fun __crystal_get_exception(unwind_ex : Void*) : UInt64
-  0u64
 end

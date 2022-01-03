@@ -66,8 +66,8 @@ module Console
       @@cwidth = (@@width // FB_ASCII_FONT_WIDTH) - 1
       @@cheight = (@@height // FB_ASCII_FONT_HEIGHT) - 1
       @@buffer = Slice.new(Pointer(UInt32).new(frame_buffer_base), frame_buffer_size)
-      memset(@@buffer.to_unsafe.as(UInt8*), 0u64,
-        @@width.to_usize * @@height.to_usize * sizeof(UInt32).to_usize)
+      Intrinsics.memset(@@buffer.to_unsafe.as(UInt8*), 0u64,
+        @@width.to_usize * @@height.to_usize * sizeof(UInt32).to_usize, false)
     end
 
     def offset(x, y)
