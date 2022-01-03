@@ -32,6 +32,7 @@ else
     curl "https://gitlab.com/bztsrc/bootboot/raw/master/dist/bootboot.efi" --output "$FILE"
 fi
 mkdir -p bin/efi/boot
+mkdir -p bin/bootboot
 cp ./.tmp/bootboot.efi ./bin/efi/boot/bootx64.efi
 
 echo "-------------------------"

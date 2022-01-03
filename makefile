@@ -1,5 +1,5 @@
 .PHONY : uefi_kernel
-uefi_kernel : bin/kernelx64.elf
+uefi_kernel : bin/bootboot/X86_64
 
 # Add these back for release builds
 # --release
@@ -42,7 +42,7 @@ LDFLAGS+= \
 
 KERNEL_SRC=$(wildcard src/*.cr src/*/*.cr)
 
-bin/kernelx64.elf : bin/kernelx64.o
+bin/bootboot/X86_64 : bin/kernelx64.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 bin/kernelx64.o : $(KERNEL_SRC)
