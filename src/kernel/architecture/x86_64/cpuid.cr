@@ -14,6 +14,11 @@ module Architecture::CPUID
     {a, b, c, d}
   end
 
+  def cpu_core_id
+    # EBX has the APIC CPU ID when calling cpuid(1)
+    cpuid(1)[1] >> 24
+  end
+
   def brand_buffer
     brand = uninitialized UInt8[48]
     brandp = brand.to_unsafe.as(UInt32*)

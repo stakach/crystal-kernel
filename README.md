@@ -51,6 +51,8 @@ Can run the VM in a [few different ways](https://wiki.gentoo.org/wiki/QEMU/Optio
 * With GDB debugging support:
   * `qemu-system-x86_64 -cpu qemu64 -bios ../OVMF-pure-x64-efi.fd -drive file=./disk.cdr,if=ide -display vnc=127.0.0.1:0 -s -S`
   * it waits for GDB to connect before starting
+* Mutli-core:
+  * `qemu-system-x86_64 -cpu qemu64 -m 128M -bios ../OVMF-pure-x64-efi.fd -drive file=./disk.cdr,if=ide -display vnc=127.0.0.1:0 -smp "sockets=1,cores=2"`
 
 ```
 gdb

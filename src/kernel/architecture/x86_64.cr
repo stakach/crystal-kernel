@@ -40,6 +40,7 @@ end
 
 # require "./x86_64/*"
 require "./x86_64/gdt"
+require "./x86_64/cpuid"
 
 fun memset(dst : UInt8*, c : USize, n : USize) : Void*
   r0 = r1 = r2 = 0

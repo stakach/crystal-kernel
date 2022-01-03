@@ -6,7 +6,15 @@ end
 
 # this is the kernel ELF file entry point
 fun kernel_main : Void
-  LibCrystalMain.__crystal_main(0, Pointer(UInt8*).null)
+  # all the CPU cores call this function, we'll pause everything except the
+  # bootstrap processor until we are ready for everything else.
+  if Architecture::CPUID.cpu_core_id == BootBoot.bootboot.bootstrap_processor_id
+    LibCrystalMain.__crystal_main(0, Pointer(UInt8*).null)
+  else
+    # TODO:: in the future we only want to 'pause' the processor here
+    # then when we're ready for SMP we can use an interrupt to kick them into gear
+    Architecture.halt_processor
+  end
 end
 
 fun __crystal_once_init : Void*
