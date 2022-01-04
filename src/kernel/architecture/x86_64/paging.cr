@@ -3,11 +3,10 @@ require "./frame_allocator"
 module Architecture::Paging
   extend self
 
+  # BSS
   lib Data
-    alias Page = UInt64
-
     struct PageTable
-      pages : Page[512]
+      pages : UInt64[512]
     end
 
     struct PageDirectory
@@ -23,10 +22,15 @@ module Architecture::Paging
     end
   end
 
+  # The x64 Address Space (the higher half are the negative / signed addresses)
+  # 00000000 00000000 - 00007FFF FFFFFFFF (lower half  - user space)
+  # 00008000 00000000 - FFFF7FFF FFFFFFFF (not valid)
+  # FFFF8000 00000000 - FFFFFFFF FFFFFFFF (higher half - kernel space)
+
   IDENTITY_MASK    = 0xFFFF_8000_0000_0000u64
-  KERNEL_OFFSET    = 0xFFFF_8080_0000_0000u64
-  MAXIMUM_USER_PTR =        0x7F_FFFF_FFFFu64
-  PDPT_SIZE        =        0x80_0000_0000u64
+  KERNEL_OFFSET    = Kernel.kernel_start.value
+  MAXIMUM_USER_PTR = 0x7F_FFFF_FFFFu64
+  PDPT_SIZE        = 0x80_0000_0000u64
 
   KERNEL_PDPT_POINTER = 0xFFFF_9000_0000_0000u64
   KERNEL_PDPT_IDX     = page_layer_indexes(KERNEL_PDPT_POINTER)[0]

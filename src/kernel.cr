@@ -4,20 +4,20 @@ lib Kernel
   $kernel_end : Void*
 
   # kernel executable code
-  $text_start : Void*
-  $text_end : Void*
+  $text_start : UInt64*
+  $text_end : UInt64*
 
   # static variables
-  $data_start : Void*
-  $data_end : Void*
+  $data_start : UInt64*
+  $data_end : UInt64*
 
   # read only variables
-  $rodata_start : Void*
-  $rodata_end : Void*
+  $rodata_start : UInt64*
+  $rodata_end : UInt64*
 
   # uninitialized variables
-  $bss_start : Void*
-  $bss_end : Void*
+  $bss_start : UInt64*
+  $bss_end : UInt64*
 end
 
 require "./entry_point"
@@ -41,7 +41,11 @@ Console.print "       CPU Cores: ", boot_info.cpu_core_count, "\n"
 Console.print "          CPU ID: ", Architecture::CPUID.cpu_core_id, ", Bootstrap CPU ID: ", boot_info.bootstrap_processor_id, "\n"
 Console.print "    Frame Buffer: ", boot_info.frame_buffer_width, "x", boot_info.frame_buffer_height, " @ 32bits\n\n"
 
-Console.print "* init architecture...\n"
+EntryPoint.memory_map do |entry|
+  Console.print "     Memory type: ", entry.type, " @ ", entry.address, ", Size: ", entry.size, " bytes\n"
+end
+
+Console.print "\n* init architecture...\n"
 Architecture.init
 Console.print "* init architecture... [done]\n"
 

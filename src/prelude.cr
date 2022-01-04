@@ -11,6 +11,8 @@ require "./prelude/crystal_core/slice"
 require "./prelude/crystal_core/int"
 
 # order not important
+require "annotations"
+require "nil"
 require "./prelude/crystal_core/char"
 require "./prelude/crystal_core/proc"
 require "./prelude/crystal_core/enum"

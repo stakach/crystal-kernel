@@ -77,7 +77,7 @@ UInt8                               # daylight savings
 
     # More entries follow this one
     # until you reach bootboot.size, while(mmap_entry < bootboot + bootboot.size)
-    memory_map : MemoryMapEntry
+    # memory_map : MemoryMapEntry
   end
 
   $bootboot : Info
