@@ -2,12 +2,14 @@ module Architecture
   extend self
 
   def init
-    Console.print "-> initializing gdtr... "
+    Console.print "-> initializing global descriptor table... "
     GDT.init_table
     Console.print "[done]\n"
 
-    Console.print "-> initializing paging... "
-    GDT.init_table
+    Console.print "-> initializing interrupt descriptor table... "
+    PIC.init_interrupts
+    Idt.init_table
+    Idt.enable
     Console.print "[done]\n"
 
     # GDT.register_int_stack Kernel.int_stack_end
@@ -40,6 +42,7 @@ end
 
 # require "./x86_64/*"
 require "./x86_64/gdt"
+require "./x86_64/idt"
 require "./x86_64/cpuid"
 
 fun memset(dst : UInt8*, c : USize, n : USize) : Void*

@@ -1,17 +1,12 @@
-lib Kernel
-  {% for i in 0..31 %}
-    fun kcpuex{{ i.id }}
-  {% end %}
-  {% for i in 0..15 %}
-    fun kirq{{ i.id }}
-  {% end %}
-end
+require "./interrupt_handlers"
+require "./pic"
 
 module Architecture::Idt
   extend self
 
   INTERRUPT_GATE      = 0x8Eu16
   KERNEL_CODE_SEGMENT = 0x08u16
+  EX_PAGEFAULT        =      14
 
   lib Data
     @[Packed]
@@ -29,30 +24,6 @@ module Architecture::Idt
       offset_2 : UInt16 # offset bits 16..31
       offset_3 : UInt32 # offset bits 32..63
       zero : UInt32
-    end
-
-    struct Registers
-      # Pushed by pushad:
-      ds,
-rbp, rdi, rsi,
-r15, r14, r13, r12, r11, r10, r9, r8,
-rdx, rcx, rbx, rax : UInt64
-      # Interrupt number
-      int_no : UInt64
-      # Pushed by the processor automatically.
-      rip, cs, rflags, userrsp, ss : UInt64
-    end
-
-    struct ExceptionRegisters
-      # Pushed by pushad:
-      ds,
-rbp, rdi, rsi,
-r15, r14, r13, r12, r11, r10, r9, r8,
-rdx, rcx, rbx, rax : UInt64
-      # Interrupt number
-      int_no, errcode : UInt64
-      # Pushed by the processor automatically.
-      rip, cs, rflags, userrsp, ss : UInt64
     end
   end
 
@@ -72,18 +43,16 @@ rdx, rcx, rbx, rax : UInt64
     @@idtr.base = @@idt.to_unsafe.address
 
     # cpu exception handlers
-    {% if flag?(:release) && !flag?(:no_cpuex) %}
-      {% for i in 0..31 %}
-        init_idt_entry {{ i }}, KERNEL_CODE_SEGMENT,
-          (->Kernel.kcpuex{{ i.id }}).pointer.address,
-          INTERRUPT_GATE
-      {% end %}
+    {% for i in 0..31 %}
+      init_idt_entry {{ i }}, KERNEL_CODE_SEGMENT,
+        (->kernel_cpu_exception{{ i.id }}).pointer.address,
+        INTERRUPT_GATE
     {% end %}
 
-    # hw interrupts
+    # hardware interrupts
     {% for i in 0..15 %}
       init_idt_entry {{ i + 32 }}, KERNEL_CODE_SEGMENT,
-        (->Kernel.kirq{{ i.id }}).pointer.address,
+        (->kernel_interrupt_request{{ i + 32 }}).pointer.address,
         INTERRUPT_GATE
     {% end %}
 
@@ -157,7 +126,7 @@ rdx, rcx, rbx, rax : UInt64
     abort "IF is set" if (check & 0x200) != 0
   end
 
-  @@last_frame = Pointer(Idt::Data::Registers).null
+  @@last_frame = Pointer(CPU::Registers).null
   class_getter last_frame
 
   @@locked = false
@@ -166,52 +135,58 @@ rdx, rcx, rbx, rax : UInt64
   @@switch_processes = false
   class_property switch_processes
 
-  private def handle_unmasked(frame : Idt::Data::Registers*)
-    PIC.eoi frame.value.int_no
+  private def handle_unmasked(frame : CPU::Registers*)
+    irq_number = frame.value.int_no - 32
+    Console.print "interrupt ", frame.value.int_no, " (IRQ ", irq_number, ") fired\n"
+    # dump_frame(frame)
 
-    if @@irq_handlers[frame.value.int_no].pointer.null?
-      Console.print "no handler for ", frame.value.int_no, "\n"
+    PIC.eoi irq_number
+
+    if @@irq_handlers[irq_number].pointer.null?
+      Console.print "no handler for ", irq_number, "\n"
     else
-      @@irq_handlers[frame.value.int_no].call
+      @@irq_handlers[irq_number].call
     end
 
-    if frame.value.int_no == 0 && @@switch_processes
+    if irq_number == 0 && @@switch_processes
       # preemptive multitasking...
-      if (current_process = Multiprocessing::Scheduler.current_process)
-        if current_process.sched_data.time_slice > 0
-          current_process.sched_data.time_slice -= 1
-          return
-        end
-      end
-      Multiprocessing::Scheduler.switch_process(frame)
+      # if (current_process = Multiprocessing::Scheduler.current_process)
+      #  if current_process.sched_data.time_slice > 0
+      #    current_process.sched_data.time_slice -= 1
+      #    return
+      #  end
+      # end
+      # Multiprocessing::Scheduler.switch_process(frame)
     end
   end
 
-  def handle(frame : Idt::Data::Registers*)
+  def handle(frame : CPU::Registers*)
     @@locked = true
     @@status_mask = true
     @@last_frame = frame
 
     handle_unmasked frame
 
-    @@last_frame = Pointer(Idt::Data::Registers).null
+    @@last_frame = Pointer(CPU::Registers).null
     @@status_mask = false
     @@locked = false
   end
 
-  private def handle_exception_unmasked(frame : Idt::Data::ExceptionRegisters*)
+  private def handle_exception_unmasked(frame : CPU::Registers*)
+    Console.print "exception ", frame.value.int_no, " fired\n"
+
     errcode = frame.value.errcode
-    unless process = Multiprocessing::Scheduler.current_process
-      dump_frame(frame)
-      Console.print "segfault from pre-startup kernel code?"
-      while true; end
-    end
-    process = process.not_nil!
+    # unless process = Multiprocessing::Scheduler.current_process
+    #  dump_frame(frame)
+    #  Console.print "segfault from pre-startup kernel code?"
+    #  while true; end
+    # end
+    # process = process.not_nil!
     case frame.value.int_no
     when EX_PAGEFAULT
       faulting_address = 0u64
       asm("mov %cr2, $0" : "=r"(faulting_address) :: "volatile")
-      faulting_page = Paging.aligned_floor faulting_address
+      # faulting_page = Paging.aligned_floor faulting_address
 
       present = (errcode & 0x1) != 0
       rw = (errcode & 0x2) != 0
@@ -219,54 +194,54 @@ rdx, rcx, rbx, rax : UInt64
       reserved = (errcode & 0x8) != 0
       id = (errcode & 0x10) != 0
 
-      Console.print Pointer(Void).new(faulting_address), " from ", Pointer(Void).new(frame.value.rip), " proc ", process.name, '\n'
+      Console.print Pointer(Void).new(faulting_address), " from ", Pointer(Void).new(frame.value.rip) # , " proc ", process.name, '\n'
 
-      if process.kernel_process?
-        panic "segfault from kernel process"
-      elsif frame.value.rip > Multiprocessing::KERNEL_INITIAL
-        panic "segfault from kernel"
-      else
-        process.udata.mmap_list.each do |node|
-          if node.contains_address? faulting_address
-            if node.handle_page_fault(present, rw, user, faulting_page)
-              return
-            else
-              panic "unhandled fault"
-            end
-          end
-        end
-      end
+      # if process.kernel_process?
+      #  panic "segfault from kernel process"
+      # elsif frame.value.rip > Multiprocessing::KERNEL_INITIAL
+      #  panic "segfault from kernel"
+      # else
+      #  process.udata.mmap_list.each do |node|
+      #    if node.contains_address? faulting_address
+      #      if node.handle_page_fault(present, rw, user, faulting_page)
+      #        return
+      #      else
+      #        panic "unhandled fault"
+      #      end
+      #    end
+      #  end
+      # end
 
       dump_frame(frame)
       panic "unhandled fault"
     else
       dump_frame(frame)
-      Console.print "process: ", process.name, '\n'
-      Console.print "unhandled cpu exception: ", frame.value.int_no, ' ', errcode, '\n'
-      while true; end
+      # Console.print "process: ", process.name, '\n'
+      interrupt = frame.value.int_no
+      if interrupt < 32
+        details = EXCEPTIONS[interrupt]
+        Console.print "unhandled cpu exception: ", frame.value.int_no, ' ', errcode, " (", details[1], "): ", details[3], '\n'
+      else
+        Console.print "unhandled cpu exception: ", frame.value.int_no, ' ', errcode, " (interrupt out of range)\n"
+      end
+      Architecture.halt_processor
     end
   end
 
-  def handle_exception(frame : Idt::Data::ExceptionRegisters*)
+  def handle_exception(frame : CPU::Registers*)
     @@locked = true
     @@status_mask = true
     @@last_frame = frame
 
     handle_exception_unmasked frame
 
-    @@last_frame = Pointer(Idt::Data::Registers).null
+    @@last_frame = Pointer(CPU::Registers).null
     @@status_mask = false
     @@locked = false
   end
 end
 
-fun kirq_handler(frame : Idt::Data::Registers*)
-  Idt.handle frame
-end
-
-EX_PAGEFAULT = 14
-
-private def dump_frame(frame : Idt::Data::ExceptionRegisters*)
+private def dump_frame(frame : Architecture::CPU::Registers*)
   {% for id in [
                  "ds",
                  "rbp", "rdi", "rsi",
@@ -279,10 +254,6 @@ private def dump_frame(frame : Idt::Data::ExceptionRegisters*)
     frame.value.{{ id.id }}.to_s Console, 16
     Console.print "\n"
   {% end %}
-end
-
-fun kcpuex_handler(frame : Idt::Data::ExceptionRegisters*)
-  Idt.handle_exception frame
 end
 
 {% if flag?(:record_cli) %}

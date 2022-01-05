@@ -2,6 +2,10 @@ def abort(message : String)
   raise message
 end
 
+def panic(message : String)
+  raise message
+end
+
 def raise(message : String) : NoReturn
   Console.print "\n\n-- fatal exception: ", message, " --\n"
   Console.print "-- halting --\n"

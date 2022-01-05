@@ -1,23 +1,23 @@
 lib Kernel
   # These pointers are configured in `kernel.ld`
-  $kernel_start : Void*
-  $kernel_end : Void*
+  $kernel_start : UInt64
+  $kernel_end : UInt64
 
   # kernel executable code
-  $text_start : UInt64*
-  $text_end : UInt64*
+  $text_start : UInt64
+  $text_end : UInt64
 
   # static variables
-  $data_start : UInt64*
-  $data_end : UInt64*
+  $data_start : UInt64
+  $data_end : UInt64
 
   # read only variables
-  $rodata_start : UInt64*
-  $rodata_end : UInt64*
+  $rodata_start : UInt64
+  $rodata_end : UInt64
 
   # uninitialized variables
-  $bss_start : UInt64*
-  $bss_end : UInt64*
+  $bss_start : UInt64
+  $bss_end : UInt64
 end
 
 require "./entry_point"
@@ -42,7 +42,11 @@ Console.print "          CPU ID: ", Architecture::CPUID.cpu_core_id, ", Bootstra
 Console.print "    Frame Buffer: ", boot_info.frame_buffer_width, "x", boot_info.frame_buffer_height, " @ 32bits\n\n"
 
 EntryPoint.memory_map do |entry|
-  Console.print "     Memory type: ", entry.type, " @ ", entry.address, ", Size: ", entry.size, " bytes\n"
+  Console.print "     Memory type: ", entry.type, " @ 0x"
+  entry.address.to_s Console, 16
+  Console.print ", Size: 0x"
+  entry.size.to_s Console, 16
+  Console.print " bytes\n"
 end
 
 Console.print "\n* init architecture...\n"

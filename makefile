@@ -11,7 +11,7 @@ CRFLAGS= \
         --target x86_64-unknown-linux-elf \
         --prelude ./prelude.cr  \
         --error-trace           \
-        --mcmodel kernel         \
+        --mcmodel kernel        \
         -Ddisable_overflow
 
 # We use clang to handle linking via LLD
@@ -22,10 +22,11 @@ CC = clang
 CFLAGS+= \
         -target x86_64-unknown-linux-elf \
         -ffreestanding  \
-        -mcmodel=kernel  \
+        -mcmodel=kernel \
         -fno-pic        \
         -O2             \
         -Wall           \
+				-mno-red-zone   \
         -Wextra
 
 # force use of LLVM Linker and output an ElF formatted file
@@ -34,6 +35,7 @@ LDFLAGS+= \
         -nostdlib               \
         -static                 \
         -ffreestanding          \
+				-mno-red-zone           \
         -O2                     \
         -T kernel.ld            \
         -z max-page-size=0x1000 \

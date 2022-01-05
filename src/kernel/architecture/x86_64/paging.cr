@@ -28,7 +28,7 @@ module Architecture::Paging
   # FFFF8000 00000000 - FFFFFFFF FFFFFFFF (higher half - kernel space)
 
   IDENTITY_MASK    = 0xFFFF_8000_0000_0000u64
-  KERNEL_OFFSET    = Kernel.kernel_start.value
+  KERNEL_OFFSET    = Kernel.kernel_start
   MAXIMUM_USER_PTR = 0x7F_FFFF_FFFFu64
   PDPT_SIZE        = 0x80_0000_0000u64
 
@@ -117,9 +117,12 @@ module Architecture::Paging
 
   # Initializes table from bootstrap code.
   def init_table(
-    text_start : Void*, text_end : Void*,
-    data_start : Void*, data_end : Void*,
-    stack_start : Void*, stack_end : Void*,
+    text_start : UInt64, text_end : UInt64,
+    data_start : UInt64, data_end : UInt64,
+    rodata_start : UInt64, rodata_end : UInt64,
+    bss_start : UInt64, bss_end : UInt64,
+
+    stack_start : UInt64, stack_end : UInt64,
     int_stack_start : Void*, int_stack_end : Void*,
     mboot_header : Multiboot::MultibootInfo*
   )
