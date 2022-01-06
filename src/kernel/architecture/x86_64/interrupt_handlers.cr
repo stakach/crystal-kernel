@@ -73,16 +73,14 @@ module Architecture
          pop %rax" ::: "volatile")
   end
 
-  macro interrupt(function_name, &block)
-    fun {{function_name.id}}
-      {{block.body}}
-      asm("iret" :::)
-    end
-  end
-
   # adds the interrupt index to the stack, on top of what the CPU automatically pushed
   macro configure_interrupt(name, index, has_error_code)
-    Architecture.interrupt :kernel_{{name.id}}{{ index.id }} do
+    fun kernel_{{name.id}}{{ index.id }}
+      # FIXME:: hack as I can't find away to directly obtain a function address
+      # `(->kernel_cpu_exception1.pointer.address` creates wrapper code
+      # and we need to undo the changes that wrapper code made to the stack
+      asm("leave" :::)
+
       # null error code added for struct uniformity if this exception doesn't include an error
       {% if !has_error_code %}
         asm("push $$0" :::)
@@ -93,8 +91,12 @@ module Architecture
       {% push_index = "push $$#{index.id}" %}
       asm({{ push_index }} :::)
 
-      # we jump here as the stub will call iret
-      asm("jmp kernel_interrupt_stub" :::)
+      {% if index < 32 %}
+        # we jump here as the stub will call iret
+        asm("jmp kernel_exception_stub" :::)
+      {% else %}
+        asm("jmp kernel_irq_stub" :::)
+      {% end %}
     end
   end
 
@@ -150,33 +152,41 @@ module Architecture
   {% end %}
 end
 
-# this keeps the resulting binary DRY, making better use of the CPU caches
-Architecture.interrupt kernel_interrupt_stub do
-  # NOTE:: undo the stack frame added by the compiler, this is pretty fragile...
-  asm("add $$24, %rsp" ::: "volatile")
-
+fun kernel_irq_stub
   # push all the general purpose registers to the stack
   Architecture.pusha64
   # we could also `fxsave64` if we wanted, but we don't plan on clobbering the
   # FPU / MMX / SSE state
 
-  # get the address of the stack
-  frame_address = 0u64
+  # get the address of the stack and call into our crystal code
   asm("cld
-       mov %rsp, $0" : "=r"(frame_address) :: "volatile")
-
-  # Process the exception in crystal land
-  frame = Pointer(Architecture::CPU::Registers).new(frame_address)
-  if frame.value.int_no < 32u64
-    Architecture::Idt.handle_exception frame
-  else
-    Architecture::Idt.handle frame
-  end
+       mov %rsp, %rdi
+       call kernel_irq_handler" ::: "volatile")
 
   # restore the state before returning
   Architecture.popa64
   # skip interrupt index and exception number pushed before the stub was called
-  asm("add $$16, %rsp" ::: "volatile")
+  asm("add $$16, %rsp
+       iretq" ::: "volatile")
+end
+
+fun kernel_irq_handler(frame : Architecture::CPU::Registers*)
+  Architecture::Idt.handle frame
+end
+
+# As above except calls the exception handler
+fun kernel_exception_stub
+  Architecture.pusha64
+  asm("cld
+       mov %rsp, %rdi
+       call kernel_cpu_exception_handler" ::: "volatile")
+  Architecture.popa64
+  asm("add $$16, %rsp
+       iretq" ::: "volatile")
+end
+
+fun kernel_cpu_exception_handler(frame : Architecture::CPU::Registers*)
+  Architecture::Idt.handle_exception frame
 end
 
 # add all the kernel exception functions
