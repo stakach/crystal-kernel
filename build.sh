@@ -48,22 +48,27 @@ rm bin/kernelx64.o
 echo "----------------------"
 echo "-> creating disk image"
 echo "----------------------"
-hdiutil create -fs fat32 -ov -size 64m -volname CRYOS -format UDTO -srcfolder bin disk.cdr || exit_code="$?"
+# TODO:: detect if running on MacOS
+# hdiutil create -fs fat32 -ov -size 64m -volname CRYOS -format UDTO -srcfolder bin disk.cdr || exit_code="$?"
 
-# TODO:: Linux
+# Debian Linux: apt install systemd-container mtools binutils
 # create disk image (64MB)
-# dd if=/dev/zero of=bin/disk.img bs=1048576 count=64
+dd if=/dev/zero of=bin/disk.img bs=1M count=64
 
-# format as FAT32 (this won't work as we need it to be a GPT format)
-# mformat -F -i bin/disk.img ::
+# create a fat32 partition
+parted bin/disk.img < partition-cmds.txt
+
+# format the disk, specifying start of the partition (2048s == 2048 x 512 byte sector)
+mformat -F -i bin/disk.img@@2048s ::
 
 # add the required folders and files
-# NOTE:: to list image files run `mdir -i bin/disk.img ::/efi/boot`
-#mmd -i bin/disk.img efi
-#mmd -i bin/disk.img efi/boot
-#mcopy -i bin/disk.img bin/kernelx64.elf ::/kernelx64.elf
-#mcopy -i bin/disk.img bin/efi/boot/bootx64.efi ::/efi/boot/bootx64.efi
-#mcopy -i bin/disk.img bin/efi/boot/bootaa64.efi ::/efi/boot/bootaa64.efi
+# NOTE:: to list image files run `mdir -i bin/disk.img@@2048s ::/efi/boot`
+mmd -i bin/disk.img@@2048s efi
+mmd -i bin/disk.img@@2048s efi/boot
+mmd -i bin/disk.img@@2048s bootboot
+mcopy -i bin/disk.img@@2048s bin/bootboot/X86_64 ::/bootboot/X86_64
+mcopy -i bin/disk.img@@2048s bin/efi/boot/bootx64.efi ::/efi/boot/bootx64.efi
+# mcopy -i bin/disk.img@@2048s bin/efi/boot/bootaa64.efi ::/efi/boot/bootaa64.efi
 
 echo "### DONE!"
 exit ${exit_code}

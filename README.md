@@ -65,6 +65,7 @@ continue
 
 * `objdump -s bin/bootboot/X86_64`
 * `x86_64-elf-readelf -hls bin/bootboot/X86_64`
+* `x86_64-linux-gnu-readelf -hls bin/bootboot/X86_64`
 * http://www.sunshine2k.de/coding/javascript/onlineelfviewer/onlineelfviewer.html
 
 To check for bootboot compatibility

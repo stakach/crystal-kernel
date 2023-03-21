@@ -1,0 +1,7 @@
+
+mktable gpt
+mkpart primary fat32 2048s 100%
+align-check optimal 1
+name 1 UEFI
+print
+quit
